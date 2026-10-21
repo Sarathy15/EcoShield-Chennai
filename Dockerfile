@@ -1,4 +1,3 @@
-# Base image with R and Shiny Server
 FROM rocker/shiny:4.3.3
 
 # Install system dependencies
@@ -12,27 +11,34 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libproj-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install required R packages
-RUN R -e "options(repos = c(CRAN = 'https://cloud.r-project.org')); \
-    install.packages(c( \
-      'openssl', 'httr', 'httr2', 's2', 'units', \
-      'shiny', 'bslib', 'dplyr', 'tidyr', 'readr', \
-      'stringr', 'lubridate', 'ggplot2', 'plotly', \
-      'DT', 'leaflet', 'htmltools', 'scales', \
-      'jsonlite', 'rvest', 'xml2', 'sf' \
-    )); \
-    required <- c('shiny', 'plotly', 'leaflet'); \
-    missing <- required[!vapply(required, requireNamespace, logical(1), quietly = TRUE)]; \
-    if (length(missing)) stop(paste('Missing packages:', paste(missing, collapse = ', ')))"
+# Configure CRAN
+RUN echo "options(repos = c(CRAN = 'https://cloud.r-project.org'))" \
+    >> /usr/local/lib/R/etc/Rprofile.site
 
-# Application directory
+# Install core application packages
+RUN R -e "install.packages(c( \
+    'shiny', 'bslib', 'dplyr', 'tidyr', 'readr', \
+    'stringr', 'lubridate', 'ggplot2', 'htmltools', \
+    'scales', 'jsonlite', 'DT' \
+))"
+
+# Install web and visualization dependencies
+RUN R -e "install.packages(c( \
+    'openssl', 'httr', 'httr2', 'xml2', 'rvest', \
+    'plotly', 'leaflet' \
+))"
+
+# Verify essential packages
+RUN R -e "stopifnot( \
+    requireNamespace('shiny', quietly=TRUE), \
+    requireNamespace('plotly', quietly=TRUE), \
+    requireNamespace('leaflet', quietly=TRUE) \
+)"
+
+# Copy application
 WORKDIR /app
-
-# Copy project files
 COPY . /app
 
-# Render will supply its own PORT environment variable
+# Start Shiny using Render's assigned port
 EXPOSE 3838
-
-# Start Shiny on Render's assigned port
 CMD ["R", "-e", "shiny::runApp('/app', host='0.0.0.0', port=as.integer(Sys.getenv('PORT', '3838')))"]
