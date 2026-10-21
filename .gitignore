@@ -1,0 +1,23 @@
+﻿# R workspace files
+.RData
+.Rhistory
+.Ruserdata
+
+# RStudio settings
+.Rproj.user/
+
+# Temporary files
+*.log
+*.tmp
+*.bak
+
+# Cache
+cache/
+
+# Secrets
+.env
+.env.*
+
+# Operating system files
+.DS_Store
+Thumbs.db
