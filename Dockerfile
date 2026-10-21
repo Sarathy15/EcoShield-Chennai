@@ -1,5 +1,9 @@
 FROM rocker/shiny:4.3.3
 
+WORKDIR /app
+
+COPY . /app
+
 RUN R -e "install.packages(c( \
   'shiny', \
   'bslib', \
@@ -20,10 +24,6 @@ RUN R -e "install.packages(c( \
   'xml2' \
 ), repos='https://cloud.r-project.org')"
 
-WORKDIR /srv/shiny-server/
-
-COPY . /srv/shiny-server/
-
 EXPOSE 3838
 
-CMD ["/usr/bin/shiny-server"]
+CMD ["R", "-e", "shiny::runApp('/app', host='0.0.0.0', port=as.integer(Sys.getenv('PORT', '3838')))"]
