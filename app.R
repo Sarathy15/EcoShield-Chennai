@@ -284,21 +284,29 @@ flood_popup <- function(x, grp=NULL) {
 kv_dl <- function(items) tags$dl(class="es-kv",lapply(names(items),function(n) tagList(tags$dt(n),tags$dd(items[[n]]))))
 
 
-metric <- function(label,value,note="") div(class="metric-card",div(class="metric-label",label),div(class="metric-value",value),div(class="metric-note",note))
+metric <- function(label,value,note="") div(class="metric-card",
+  div(class="metric-label",label),
+  div(class="metric-value",value),
+  if(nzchar(note)) div(class="metric-note",note) else NULL
+)
 notice <- function(title,text,type="warning") div(class=paste("notice",type),tags$strong(title),text)
 header <- function(title,subtitle) tagList(tags$h2(class="section-title",title),tags$p(class="section-subtitle",subtitle))
 
 # ---- New UI helpers (Overview + Rainfall) ----
-kpi <- function(label,value,note="") div(class="es-kpi",div(class="es-kpi-label",label),div(class="es-kpi-value",value),div(class="es-kpi-note",note))
+kpi <- function(label,value,note="") div(class="es-kpi",
+  div(class="es-kpi-label",label),
+  div(class="es-kpi-value",value),
+  if(nzchar(note)) div(class="es-kpi-note",note) else NULL
+)
 chart_panel <- function(title,subtitle=NULL,...,class="") div(class=paste("panel es-panel",class),tags$h3(title),if(!is.null(subtitle)) tags$p(class="es-panel-sub",subtitle),...)
 insight_item <- function(label,...) div(class="es-insight",span(class="es-insight-tag",label),span(class="es-insight-text",...))
 
 # ---- New analytical helpers ----
 fmt_n   <- function(x) format(x, big.mark=",", scientific=FALSE)
 fmt_num <- function(x, d=2) ifelse(is.finite(x), formatC(x, format="f", digits=d, big.mark=","), "N/A")
-cfg <- function(p) config(p, displaylogo=FALSE, modeBarButtonsToRemove=c("lasso2d","select2d"), toImageButtonOptions=list(format="png",scale=2,filename="ecoshield_chart"))
-base_layout <- function(p, ...) layout(p, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font=list(family="Inter, Segoe UI, system-ui, sans-serif", size=12, color="#183e37"), margin=list(l=60,r=20,t=20,b=45), ...)
-station_palette <- function(n) rep(c("#14866d","#e2a33b","#3b7ea1","#a14b78","#7a8f2a","#c0583c"), length.out=max(n,1))[seq_len(max(n,1))]
+cfg <- function(p) config(p, responsive=TRUE, displaylogo=FALSE, modeBarButtonsToRemove=c("lasso2d","select2d"), toImageButtonOptions=list(format="png",scale=2,filename="ecoshield_chart"))
+base_layout <- function(p, ...) layout(p, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font=list(family="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", size=12, color="#0f172a"), margin=list(l=60,r=20,t=20,b=45), ...)
+station_palette <- function(n) rep(c("#0f766e","#0284c7","#d97706","#7c3aed","#059669","#e11d48","#2563eb","#ea580c"), length.out=max(n,1))[seq_len(max(n,1))]
 
 period_floor <- function(d, unit) switch(unit, month=floor_date(d,"month"), quarter=floor_date(d,"quarter"), year=floor_date(d,"year"))
 period_seq   <- function(from, to, unit) seq(from, to, by=unit)
@@ -427,54 +435,45 @@ write_with_header <- function(df, file, header_lines) {
   write_csv(df, file, append=TRUE, col_names=TRUE)
 }
 
+# ---- Navigation SVG Icons (Clean 16x16 crisp vectors) ----
+nav_icon <- function(name) {
+  svgs <- list(
+    "overview" = '<svg class="es-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>',
+    "rainfall" = '<svg class="es-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"></path><line x1="8" y1="19" x2="8" y2="21"></line><line x1="8" y1="13" x2="8" y2="15"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="12" y1="15" x2="12" y2="17"></line><line x1="16" y1="19" x2="16" y2="21"></line><line x1="16" y1="13" x2="16" y2="15"></line></svg>',
+    "flood"    = '<svg class="es-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>',
+    "air"      = '<svg class="es-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"></path></svg>',
+    "parks"    = '<svg class="es-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L4 12h5l-3 6h6v4h2v-4h6l-3-6h5z"></path></svg>',
+    "live"     = '<svg class="es-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"></path><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"></path><circle cx="12" cy="12" r="2"></circle><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"></path><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"></path></svg>',
+    "shield"   = '<svg class="es-icon-brand" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>'
+  )
+  HTML(svgs[[name]] %||% "")
+}
+
 # ---------------------------------------------------------------------
 # UI
 # ---------------------------------------------------------------------
 ui <- page_navbar(
-  title=div(class="brandbar",div(class="brandmark",span("Eco",class="eco"),"Shield"),div(class="brand-subtitle","Environmental Intelligence | Chennai")),
-  id="nav", selected="Overview", theme=bs_theme(version=5,bootswatch="minty",primary="#14866d"),
-  header=tags$head(tags$meta(name="viewport",content="width=device-width, initial-scale=1"),tags$style(HTML("\
-    :root{--eco:#14866d;--ink:#183e37;--muted:#718780;--paper:#f3f8f6} body{background:var(--paper);color:var(--ink)}\
-    .navbar{box-shadow:0 3px 18px #123c3214}.brandbar{display:flex;align-items:center;gap:12px;white-space:nowrap}.brandmark{font-size:1.3rem;font-weight:800;color:#173d35}.eco{color:var(--eco)}.brand-subtitle{font-size:.8rem;color:#718780;border-left:1px solid #cbdad5;padding-left:12px}\
-    .page-wrap{max-width:1600px;margin:auto;padding:28px}.hero{padding:32px;border-radius:20px;color:white;background:linear-gradient(115deg,#124f43,#168d72);margin-bottom:24px;box-shadow:0 12px 30px #1059481f}.hero h1{color:white;font-weight:800}.hero p{max-width:1000px;line-height:1.7}\
-    .metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin:18px 0 22px}.metric-card,.panel{background:white;border:1px solid #e0ebe6;border-radius:17px;padding:22px;box-shadow:0 5px 20px #1e463a09;min-width:0}.metric-label{font-size:.78rem;font-weight:750;text-transform:uppercase;letter-spacing:.06em;color:#718780}.metric-value{font-size:2rem;font-weight:800;color:var(--eco);margin:10px 0 2px;overflow-wrap:anywhere}.metric-note,.section-subtitle,.small-note{color:#718780;font-size:.9rem}.section-title{font-size:1.75rem;font-weight:800;margin:6px 0 4px}.section-subtitle{margin-bottom:20px}.panel h3{font-size:1.22rem;font-weight:750;margin-top:0}.panel-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin:18px 0}.notice{padding:15px 18px;border-radius:10px;margin:14px 0 20px;line-height:1.6}.notice strong{margin-right:7px}.notice.warning{background:#fff7e6;border-left:4px solid #e6a526;color:#72501b}.notice.info{background:#eaf7f2;border-left:4px solid #14866d;color:#225c4f}.status-ok{background:#eaf7f2;padding:10px;border-radius:8px;color:#225c4f;margin:4px 0}.status-error{background:#fff0ed;padding:10px;border-radius:8px;color:#823c30;margin:4px 0}.footer{text-align:center;color:#82958f;border-top:1px solid #dfe9e5;margin-top:28px;padding:22px 0 8px}.action-card{border:1px solid #e0ebe6;background:white;border-radius:14px;padding:18px;height:100%}.action-card h4{color:var(--eco);font-weight:750}.btn-primary{background:#14866d;border-color:#14866d}@media(max-width:900px){.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.panel-row{grid-template-columns:1fr}.page-wrap{padding:18px 12px}.hero{padding:24px 20px}}@media(max-width:520px){.metric-grid{gap:10px}.metric-card{padding:14px}.metric-value{font-size:1.5rem}.brand-subtitle{display:none}}\
-    /* ===== EcoShield premium layer (Overview + Rainfall pages only) ===== */\
-    .es-wrap{padding:18px 24px 24px}\
-    .es-header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;padding:18px 24px;border-radius:16px;color:#fff;background:linear-gradient(115deg,#0f4a3f,#14866d 70%,#1a9a9a);box-shadow:0 8px 22px #1059481f;margin-bottom:14px}\
-    .es-title{font-size:1.5rem;font-weight:800;letter-spacing:-.01em}.es-title span{font-weight:500;opacity:.85;font-size:1.05rem;margin-left:6px}\
-    .es-sub{font-size:.86rem;line-height:1.5;opacity:.92;max-width:900px;margin-top:4px}\
-    .es-header-side{display:flex;flex-direction:column;gap:4px;min-width:290px;font-size:.78rem}\
-    .es-chip{display:flex;align-items:center;gap:7px;background:#ffffff1f;border:1px solid #ffffff2e;border-radius:8px;padding:4px 10px}.es-chip.bad{background:#7a2a1e66}.es-dot{width:7px;height:7px;border-radius:50%;background:#7ff0c9;flex:none}.bad .es-dot{background:#ffb4a5}\
-    .es-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:14px}\
-    .es-kpi{background:#fff;border:1px solid #e0ebe6;border-left:4px solid var(--eco);border-radius:12px;padding:10px 14px;box-shadow:0 3px 12px #1e463a08;min-width:0}\
-    .es-kpi-label{font-size:.68rem;font-weight:750;text-transform:uppercase;letter-spacing:.06em;color:#718780}.es-kpi-value{font-size:1.45rem;font-weight:800;color:var(--eco);line-height:1.2;margin-top:2px;overflow-wrap:anywhere}.es-kpi-note{font-size:.72rem;color:#718780;line-height:1.3;margin-top:2px}\
-    .es-grid{display:grid;gap:14px;margin-bottom:14px}.es-map-grid{grid-template-columns:minmax(0,2.1fr) minmax(0,1fr)}.es-2{grid-template-columns:repeat(2,minmax(0,1fr))}.es-3{grid-template-columns:repeat(3,minmax(0,1fr))}\
-    .es-panel{padding:14px 16px;border-radius:14px;margin-bottom:14px}.es-grid .es-panel{margin-bottom:0}.es-panel h3{font-size:1.02rem;font-weight:750;margin:0 0 2px}.es-panel-sub{font-size:.78rem;color:#718780;margin:0 0 8px;line-height:1.4}\
-    .es-scroll{max-height:560px;overflow-y:auto;padding-right:4px}\
-    .es-controls{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:flex-end;margin-bottom:6px}.es-controls .form-group{margin-bottom:4px}.es-controls label,.es-filter label{font-size:.76rem;font-weight:700;color:#4d6a62}.es-controls .form-control,.es-controls .form-select,.es-filter .form-control,.es-filter .form-select{font-size:.85rem;padding:.25rem .5rem}.es-controls .irs{font-size:.7rem}\
-    .es-filter{padding:12px 16px;border-radius:14px}.es-filter .form-group{margin-bottom:0}\
-    .es-insight{display:flex;gap:9px;padding:8px 0;border-bottom:1px solid #eef3f1;font-size:.82rem;line-height:1.45}.es-insight:last-child{border-bottom:0}\
-    .es-insight-tag{flex:none;width:88px;font-size:.64rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#14866d;padding-top:2px}.es-insight-text{min-width:0}\
-    .es-insight-group{font-size:.78rem;font-weight:800;color:#183e37;margin:10px 0 0;padding-top:6px;border-top:2px solid #e0ebe6}.es-insight-group:first-child{border-top:0;margin-top:0}\
-    .es-layer{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;font-size:.74rem}.es-layer span{border-radius:6px;padding:3px 8px;background:#eaf7f2;color:#225c4f}.es-layer span.off{background:#f1f3f2;color:#6c7a75}\
-    .es-method{font-size:.8rem;line-height:1.55;color:#2f4d45}.es-method summary{cursor:pointer;font-weight:750;color:#14866d;font-size:.92rem}.es-method li{margin-bottom:3px}\
-    .es-note{font-size:.76rem;color:#6a7f78;margin-top:6px;line-height:1.45}.es-footnote{font-size:.74rem;color:#7a8d87}\
-    table.dataTable{font-size:.8rem}.leaflet-container{border-radius:10px}\
-    @media(max-width:1250px){.es-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.es-map-grid{grid-template-columns:1fr}.es-3{grid-template-columns:1fr 1fr}}\
-    @media(max-width:900px){.es-2,.es-3{grid-template-columns:1fr}.es-header{flex-direction:column}.es-header-side{min-width:0;width:100%}.es-wrap{padding:12px}}\
-    @media(max-width:560px){.es-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}\
-    /* ===== Flood Map page layer ===== */\
-    .es-flood-grid{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);gap:14px;margin-bottom:14px;align-items:stretch}\
-    .es-side-panel{display:flex;flex-direction:column;min-height:0;margin-bottom:0}.es-side-scroll{overflow-y:auto;max-height:600px;padding-right:4px;flex:1 1 auto}\
-    .es-sec{font-size:.7rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#14866d;margin:12px 0 5px;padding-top:9px;border-top:2px solid #e0ebe6}.es-sec:first-child{border-top:0;margin-top:0;padding-top:0}\
-    .es-kv{display:grid;grid-template-columns:104px minmax(0,1fr);gap:3px 10px;font-size:.8rem;margin:0}.es-kv dt{color:#718780;font-weight:650}.es-kv dd{margin:0;overflow-wrap:anywhere}\
-    .es-limit{background:#fff7e6;border-left:4px solid #e6a526;color:#72501b;font-size:.75rem;line-height:1.45;padding:8px 10px;border-radius:8px;margin-top:8px;flex:none}\
-    .es-flood-grid .leaflet-container{width:100%}.es-btn-sm{padding:.2rem .6rem;font-size:.78rem}\
-    @media(max-width:1250px){.es-flood-grid{grid-template-columns:1fr}.es-side-scroll{max-height:none}}\
-  "))),
+  title=div(class="brandbar",
+    div(class="brand-emblem", nav_icon("shield")),
+    div(class="brandmark", span("Eco",class="eco"), "Shield"),
+    div(class="brand-subtitle", "Chennai Environmental Intelligence")
+  ),
+  window_title="EcoShield – Chennai Environmental Intelligence",
+  id="nav", selected="Overview",
+  theme=bs_theme(version=5, bootswatch="minty", primary="#0f766e"),
+  header=tags$head(
+    tags$title("EcoShield – Chennai Environmental Intelligence"),
+    tags$meta(name="viewport", content="width=device-width, initial-scale=1"),
+    tags$link(rel="preconnect", href="https://fonts.googleapis.com"),
+    tags$link(rel="preconnect", href="https://fonts.gstatic.com", crossorigin=NA),
+    tags$link(rel="stylesheet", href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"),
+    tags$link(rel="stylesheet", type="text/css", href="styles.css"),
+    if(file.exists("www/styles.css")) includeCSS("www/styles.css") else NULL,
+    tags$script(src="app.js")
+  ),
   
   # ============================ OVERVIEW ============================
-  nav_panel("Overview", value="Overview", div(class="page-wrap es-wrap",
+  nav_panel(title=tagList(nav_icon("overview"), "Overview"), value="Overview", div(class="page-wrap es-wrap",
                                               div(class="es-header",
                                                   div(div(class="es-title","EcoShield",span("Environmental Intelligence · Chennai")),
                                                       div(class="es-sub","Exploratory dashboard combining historical rainfall records, recorded flood-related locations, air-quality records and a listed-park inventory for Chennai, Tamil Nadu. All data are historical or supplied files: this is not live monitoring and not an official alert service.")),
@@ -499,7 +498,7 @@ ui <- page_navbar(
                                               div(class="footer","EcoShield | Chennai Environmental Data Exploration"))),
   
   # ============================ RAINFALL ============================
-  nav_panel("Rainfall", value="Rainfall", div(class="page-wrap es-wrap",header("Historical Rainfall Analysis","Explore patterns, anomalies and coverage of recorded values across monitoring stations."),
+  nav_panel(title=tagList(nav_icon("rainfall"), "Rainfall"), value="Rainfall", div(class="page-wrap es-wrap",header("Historical Rainfall Analysis","Explore patterns, anomalies and coverage of recorded values across monitoring stations."),
                                               layout_columns(col_widths=c(3,3,3,3),div(class="panel es-filter",selectInput("rain_station","Monitoring station",choices="All stations")),div(class="panel es-filter",sliderInput("rain_years","Year range",min=1993,max=2023,value=c(1993,2023),sep="")),div(class="panel es-filter",selectInput("rain_view","Trend view",choices=c("Monthly trend","Quarterly average","Annual average"))),div(class="panel es-filter",numericInput("rain_min","Minimum recorded value",value=0,min=0))),
                                               layout_columns(col_widths=c(8,4),div(class="panel es-filter",selectizeInput("rain_compare","Compare stations (optional, max 5; overrides the single-station filter in the time series and seasonal charts)",choices=NULL,multiple=TRUE,options=list(maxItems=5,placeholder="Select stations to overlay"),width="100%")),
                                                              div(class="panel es-filter",numericInput("rain_min_n","Minimum records per month cell (heat map, anomalies, change points)",value=3,min=1,max=31,step=1))),
@@ -557,7 +556,7 @@ ui <- page_navbar(
   )),
   
   # ============================ FLOOD MAP ============================
-  nav_panel("Flood Map", value="Flood Map", div(class="page-wrap es-wrap",
+  nav_panel(title=tagList(nav_icon("flood"), "Flood Map"), value="Flood Map", div(class="page-wrap es-wrap",
                                                 div(class="es-header",
                                                     div(div(class="es-title","Chennai Flood Geographic Intelligence"),
                                                         div(class="es-sub","Explore recorded geographic locations and their spatial distribution.")),
@@ -601,8 +600,7 @@ ui <- page_navbar(
                                                   tags$li(tags$b("Not available in the source: "),"verified flood depth, severity, event dates, ward or neighbourhood boundaries, street addresses. None are inferred. Distance analyses are skipped above 1,500 displayed points.")))) 
   )),
   
-  nav_panel("Air Quality", value="Air Quality", div(class="page-wrap aq-page",
-                                                    tags$style(HTML('.aq-filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) auto;gap:12px;align-items:end;margin:6px 0 12px}.aq-filters .panel{padding:10px 14px;border-radius:14px}.aq-filters .form-group{margin-bottom:0}.aq-filters label{font-size:.72rem;font-weight:750;color:#718780;text-transform:uppercase;letter-spacing:.05em}.aq-reset .btn{border-radius:12px;font-weight:700;white-space:nowrap}.aq-kpis{gap:12px;margin:12px 0 14px}.aq-kpis .metric-card{padding:10px 14px;border-radius:12px;border-left:4px solid var(--eco)}.aq-kpis .metric-label{font-size:.68rem}.aq-kpis .metric-value{font-size:1.45rem;margin:2px 0 0}.aq-kpis .metric-note{font-size:.72rem}.aq-main{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);gap:14px;margin-bottom:14px}.aq-col{display:flex;flex-direction:column;gap:14px;min-width:0}.aq-col .es-panel,.aq-row .es-panel{margin-bottom:0}.aq-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:14px}.aq-explain{font-size:.8rem;line-height:1.5;color:#35524b;background:#f3f8f6;border-radius:10px;padding:8px 12px;margin-top:6px}.aq-explain ul,.aq-dq ul{margin:4px 0 0;padding-left:18px}.aq-dq{font-size:.82rem;line-height:1.55}.aq-dq h4{font-size:.8rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#14866d;margin:8px 0 2px}@media(max-width:900px){.aq-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.aq-main,.aq-row{grid-template-columns:1fr}}')),
+  nav_panel(title=tagList(nav_icon("air"), "Air Quality"), value="Air Quality", div(class="page-wrap aq-page",
                                                     header("Chennai Air Quality Intelligence","Explore recorded AQI values, compare monitoring stations, and understand the distribution of supplied air-quality observations."),
                                                     
                                                     div(class="aq-filters",
@@ -640,15 +638,14 @@ ui <- page_navbar(
                                                     div(class="panel es-panel aq-dq",tags$h3("Data quality and methods"),uiOutput("aq_quality")),
                                                     div(class="panel es-panel",tags$h3("Air-quality records"),downloadButton("download_aq","Download CSV"),br(),br(),DTOutput("aq_table")))),
   
-  nav_panel("Parks", value="Parks", div(class="page-wrap",header("Park Distribution Across Chennai","Explore listed park names by zone and ward."),
+  nav_panel(title=tagList(nav_icon("parks"), "Parks"), value="Parks", div(class="page-wrap",header("Park Distribution Across Chennai","Explore listed park names by zone and ward."),
                                        
                                         layout_columns(col_widths=c(3,3,3,3),div(class="panel",selectInput("park_zone","Zone",choices="All zones")),div(class="panel",selectInput("park_ward","Ward",choices="All wards")),div(class="panel",textInput("park_search","Search park name",placeholder="Enter part of a park name")),div(class="panel",selectInput("park_sort","Sort directory",choices=c("Name A–Z","Name Z–A","Zone","Ward")))),uiOutput("park_metrics"),
                                         div(class="panel-row",div(class="panel",tags$h3("Listed parks by zone"),plotlyOutput("park_zone_plot",height="440px")),div(class="panel",tags$h3("Wards with the fewest listed parks"),plotlyOutput("park_ward_plot",height="440px"))),
                                         div(class="panel-row",div(class="panel",tags$h3("Zone bubble comparison"),p(class="small-note","Each bubble represents a zone. Bubble size shows listed park records; the vertical position shows how many wards are represented in the filtered records. This is not a green-cover measure."),plotlyOutput("park_bubble",height="390px")),div(class="panel",tags$h3("Park directory insight"),uiOutput("park_insight"))),
                                         div(class="panel",tags$h3("Park directory"),downloadButton("download_parks","Download CSV"),br(),br(),DTOutput("park_table")))),
   
-  nav_panel("Live Monitor", value="Action Plan", div(class="page-wrap lv-page",
-                                                     tags$style(HTML('.lv-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:4px 0 12px}.lv-small{font-size:.8rem;color:#718780}.lv-grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:14px}.lv-grid-map{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:14px;margin-bottom:14px}.lv-page .es-panel{margin-bottom:0}.lv-chip{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.72rem;font-weight:750;line-height:1.5}.lv-chip.ok{background:#e1f4ec;color:#14664f}.lv-chip.warn{background:#fff1d6;color:#8a5a00}.lv-chip.bad{background:#fde5e0;color:#8a2b1c}.lv-chip.off{background:#eceff0;color:#56656a}.lv-chip.fc{background:#e4eefb;color:#1f4d8a}.lv-tbl{width:100%;border-collapse:collapse;font-size:.8rem}.lv-tbl th{font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;color:#718780;text-align:left;padding:5px 8px;border-bottom:2px solid #e0ebe6}.lv-tbl td{padding:6px 8px;border-bottom:1px solid #eef3f1;vertical-align:top}.lv-tbl-wrap{overflow-x:auto}.lv-sw{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid #9aa;margin-right:6px;vertical-align:middle}.lv-note{font-size:.8rem;line-height:1.5;color:#35524b;background:#f3f8f6;border-radius:10px;padding:8px 12px;margin-top:8px}.lv-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:10px 0 14px}.lv-kpis .es-kpi-value{font-size:1.25rem}.lv-ctl{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}.lv-ctl .form-group{margin-bottom:4px;min-width:150px}.lv-ctl label{font-size:.72rem;font-weight:750;color:#718780;text-transform:uppercase}@media(max-width:900px){.lv-grid2,.lv-grid-map{grid-template-columns:1fr}.lv-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}')),
+  nav_panel(title=tagList(nav_icon("live"), "Live Monitor"), value="Action Plan", div(class="page-wrap lv-page",
                                                      header("Chennai Live Environmental Monitor","Monitor reported rainfall, weather observations, and official environmental alerts using the latest available data."),
                                                      uiOutput("lv_banner"),
                                                      div(class="lv-toolbar", uiOutput("lv_refresh_info"), actionButton("lv_refresh","Refresh now",icon=icon("rotate"),class="btn-outline-primary")),
@@ -1898,9 +1895,9 @@ server <- function(input, output, session) {
   output$download_aq <- downloadHandler(filename=function()paste0("ecoshield_air_quality_",Sys.Date(),".csv"),content=function(file)write_csv(select(aq_f(),-AQI.Cat,-AQI.Poll),file))
   
   output$park_metrics <- renderUI({x<-parks_f();div(class="metric-grid",metric("Listed records",format(nrow(x),big.mark=","),"After current filters"),metric("Distinct names",n_distinct(x$Park),"Not area measurements"),metric("Zones represented",n_distinct(x$Zone),"Current selection"),metric("Wards represented",n_distinct(x$Ward),"Current selection"))})
-  output$park_zone_plot <- renderPlotly({x<-parks_f()|>count(Zone,name="ParkCount",sort=TRUE);validate(need(nrow(x)>0,"No park records match."));p<-ggplot(x,aes(ParkCount,reorder(Zone,ParkCount),text=paste0("Zone: ",Zone,"<br>Listed records: ",ParkCount)))+geom_col(fill="#14866d")+labs(x="Number of listed parks",y="Zone")+theme_minimal();ggplotly(p,tooltip="text")|>config(displaylogo=FALSE)})
-  output$park_ward_plot <- renderPlotly({x<-parks_f()|>count(Ward,name="ParkCount")|>arrange(ParkCount,Ward)|>slice_head(n=15);validate(need(nrow(x)>0,"No park records match."));p<-ggplot(x,aes(ParkCount,reorder(Ward,ParkCount),text=paste0("Ward: ",Ward,"<br>Listed records: ",ParkCount)))+geom_col(fill="#d8894c")+labs(x="Number of listed parks",y="Ward")+theme_minimal();ggplotly(p,tooltip="text")|>config(displaylogo=FALSE)})
-  output$park_bubble <- renderPlotly({x<-parks_f()|>group_by(Zone)|>summarise(Listed=n(),Wards=n_distinct(Ward),.groups="drop");validate(need(nrow(x)>0,"No zone records match the filters."));p<-ggplot(x,aes(Listed,Wards,size=Listed,text=paste0("Zone: ",Zone,"<br>Listed records: ",Listed,"<br>Wards represented: ",Wards)))+geom_point(alpha=.7,color="#14866d")+labs(x="Listed park records",y="Wards represented",size="Listed records")+theme_minimal();ggplotly(p,tooltip="text")|>config(displaylogo=FALSE)})
+  output$park_zone_plot <- renderPlotly({x<-parks_f()|>count(Zone,name="ParkCount",sort=TRUE);validate(need(nrow(x)>0,"No park records match."));p<-ggplot(x,aes(ParkCount,reorder(Zone,ParkCount),text=paste0("Zone: ",Zone,"<br>Listed records: ",ParkCount)))+geom_col(fill="#14866d")+labs(x="Number of listed parks",y="Zone")+theme_minimal();ggplotly(p,tooltip="text")|>config(displaylogo=FALSE,responsive=TRUE)})
+  output$park_ward_plot <- renderPlotly({x<-parks_f()|>count(Ward,name="ParkCount")|>arrange(ParkCount,Ward)|>slice_head(n=15);validate(need(nrow(x)>0,"No park records match."));p<-ggplot(x,aes(ParkCount,reorder(Ward,ParkCount),text=paste0("Ward: ",Ward,"<br>Listed records: ",ParkCount)))+geom_col(fill="#d8894c")+labs(x="Number of listed parks",y="Ward")+theme_minimal();ggplotly(p,tooltip="text")|>config(displaylogo=FALSE,responsive=TRUE)})
+  output$park_bubble <- renderPlotly({x<-parks_f()|>group_by(Zone)|>summarise(Listed=n(),Wards=n_distinct(Ward),.groups="drop");validate(need(nrow(x)>0,"No zone records match the filters."));p<-ggplot(x,aes(Listed,Wards,size=Listed,text=paste0("Zone: ",Zone,"<br>Listed records: ",Listed,"<br>Wards represented: ",Wards)))+geom_point(alpha=.7,color="#14866d")+labs(x="Listed park records",y="Wards represented",size="Listed records")+theme_minimal();ggplotly(p,tooltip="text")|>config(displaylogo=FALSE,responsive=TRUE)})
   output$park_insight <- renderUI({x<-parks_f();if(!nrow(x))return(p("No park records match the selected filters."));z<-x|>count(Zone,sort=TRUE);w<-x|>count(Ward,sort=TRUE);div(class="notice info",tags$p(tags$b("Listed records in view: "),nrow(x)),tags$p(tags$b("Zone with most listed records in view: "),z$Zone[1]," (",z$n[1],")."),tags$p(tags$b("Ward with most listed records in view: "),w$Ward[1]," (",w$n[1],")."),tags$p("Interpretation: these are inventory-record counts only. They do not measure park area, quality, access, or green cover."))})
   
   output$park_table <- renderDT(datatable(parks_f(),rownames=FALSE,filter="top",options=list(pageLength=10,scrollX=TRUE)))

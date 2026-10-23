@@ -1,0 +1,13 @@
+.git
+.gitignore
+.Rproj.user
+.RData
+.RDataTmp
+.Rhistory
+Dockerfile
+.dockerignore
+run_app.R
+deploy_shinyapps.R
+*.ipynb
+cache/
+

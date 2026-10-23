@@ -1,5 +1,6 @@
-﻿# R workspace files
+# R workspace files
 .RData
+.RDataTmp
 .Rhistory
 .Ruserdata
 
@@ -17,6 +18,8 @@ cache/
 # Secrets
 .env
 .env.*
+deploy_shinyapps.R
+
 
 # Operating system files
 .DS_Store
